@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #e0f7fa;
+        }
+        #game-mode {
+            margin-bottom: 20px;
+        }
+        #game-mode button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 0 10px;
+            transition: background-color 0.3s;
+        }
+        #game-mode button:hover {
+            background-color: #1976d2;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            background-color: #ffffff;
+            padding: 5px;
+            border: 2px solid #000000;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #ffffff;
+            border: 2px solid #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            color: transparent;
+        }
+        .cell.x {
+            color: #ff5722;
+        }
+        .cell.o {
+            color: #4caf50;
+        }
+        .cell:hover {
+            background-color: #f0f0f0;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        #reset-button {
+            display: block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #reset-button:hover {
+            background-color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-mode">
+        <button id="one-player">Play Against AI</button>
+        <button id="two-players">Play with Friends</button>
+    </div>
+    <div id="game-board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+    <div id="status"></div>
+    <button id="reset-button">Restart Game</button>
+    <script>
+        const cells = document.querySelectorAll('.cell');
+        const status = document.getElementById('status');
+        const resetButton = document.getElementById('reset-button');
+        const onePlayerButton = document.getElementById('one-player');
+        const twoPlayersButton = document.getElementById('two-players');
+
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let mode = 'two-players';
+
+        const winningCombinations = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        const checkWinner = () => {
+            for (const combo of winningCombinations) {
+                const [a, b, c] = combo;
+                if (cells[a].textContent && cells[a].textContent === cells[b].textContent && cells[a].textContent === cells[c].textContent) {
+                    return cells[a].textContent;
+                }
+            }
+            return [...cells].every(cell => cell.textContent) ? 'Tie' : null;
+        };
+
+        const handleClick = (event) => {
+            const cell = event.target;
+            if (cell.textContent === '' && gameActive) {
+                cell.textContent = currentPlayer;
+                cell.classList.add(currentPlayer.toLowerCase());
+                const result = checkWinner();
+                if (result) {
+                    gameActive = false;
+                    status.textContent = result === 'Tie' ? 'It\'s a Tie!' : `${result} Wins!`;
+                } else {
+                    if (mode === 'ai' && currentPlayer === 'O') {
+                        setTimeout(aiMove, 500);
+                    } else {
+                        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                    }
+                }
+            }
+        };
+
+        const aiMove = () => {
+            const emptyCells = [...cells].filter(cell => cell.textContent === '');
+            if (emptyCells.length === 0) return;
+
+            const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            randomCell.textContent = 'O';
+            randomCell.classList.add('o');
+
+            const result = checkWinner();
+            if (result) {
+                gameActive = false;
+                status.textContent = result === 'Tie' ? 'It\'s a Tie!' : `${result} Wins!`;
+            } else {
+                currentPlayer = 'X';
+            }
+        };
+
+        const handleModeChange = (newMode) => {
+            mode = newMode;
+            resetGame();
+        };
+
+        const resetGame = () => {
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('x', 'o');
+            });
+            status.textContent = '';
+            currentPlayer = 'X';
+            gameActive = true;
+        };
+
+        onePlayerButton.addEventListener('click', () => handleModeChange('ai'));
+        twoPlayersButton.addEventListener('click', () => handleModeChange('two-players'));
+        cells.forEach(cell => cell.addEventListener('click', handleClick));
+        resetButton.addEventListener('click', resetGame);
+    </script>
+</body>
+</html>
